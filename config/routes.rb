@@ -1,8 +1,15 @@
 Rails.application.routes.draw do
 
-  # User Module API Routes 
+  # Module API Routes 
   namespace :api do
     namespace :v1 do
+
+      # Jobs Module API Routes
+      get 'jobs' => 'jobs#index'
+      post '/syncjobs' => 'jobs#syncjobs'
+
+
+      # User Module API Routes
       get 'user/all' => 'user#index'
       # resources :user, only: [:index, :show, :create, :update, :destroy]
     end
