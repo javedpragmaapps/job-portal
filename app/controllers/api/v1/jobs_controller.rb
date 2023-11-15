@@ -278,7 +278,14 @@ class Api::V1::JobsController < ApplicationController
   end
 
   def show
-    render json: { error: "Inside show Action"}
+    job = Job.find_by(reference_number: params[:id])
+    if job
+      render json: job, status:200
+    else
+      render json: {
+          error: "Job Not Found."
+      } 
+    end
   end
 
   def create
@@ -286,11 +293,29 @@ class Api::V1::JobsController < ApplicationController
   end
 
   def update
-    render json: { error: "Inside update Action"}
+    job = Job.find_by(reference_number: params[:id])
+
+    # check post is save or not
+    if job
+      job.update(title: params[:title], 
+      # city: params[:city], state: params[:state], category_id: params[:category_id], 
+      # company_id: params[:company_id], emp_type: params[:emp_type], experience: params[:experience], salary: params[:salary],
+      # cpa: params[:cpa], verified: params[:verified], description: params[:description], skills: params[:skills], qualification: params[:qualification]
+      )
+      render json: job, status:200
+    else
+      render json: { error: "Job Not Found."} 
+    end
   end
 
   def destroy
-    render json: { error: "Inside destroy Action"}
+    job = Job.find_by(reference_number: params[:id])
+    if job
+      job.destroy
+      render json:  { error: "Job has been deleted."} 
+    else
+      render json: { error: "Job Not Found."} 
+    end
   end
 
   private
