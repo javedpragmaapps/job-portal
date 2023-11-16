@@ -10,7 +10,34 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2023_11_15_062031) do
+ActiveRecord::Schema[7.1].define(version: 2023_11_16_064652) do
+  create_table "category", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "title", null: false
+    t.datetime "created_at", precision: nil, default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.index ["title"], name: "IDX_9f16dbbf263b0af0f03637fa7b", unique: true
+  end
+
+  create_table "companies", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "phone", null: false
+    t.string "email", null: false
+    t.string "website", null: false
+    t.string "city"
+    t.string "state"
+    t.string "country"
+    t.string "primary_industry", null: false
+    t.integer "founded_in", null: false
+    t.string "logo", null: false
+    t.json "social_handles"
+    t.integer "company_size", null: false
+    t.string "description", limit: 1000
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.decimal "latitude", precision: 9, scale: 6
+    t.decimal "longitude", precision: 9, scale: 6
+    t.index ["name"], name: "IDX_3dacbb3eb4f095e29372ff8e13", unique: true
+  end
+
   create_table "jobs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "reference_number", null: false
     t.string "title", null: false

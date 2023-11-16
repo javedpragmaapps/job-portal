@@ -9,6 +9,9 @@ Rails.application.routes.draw do
       get 'jobs' => 'jobs#index'
       post '/syncjobs' => 'jobs#syncjobs'
       # get '/jobs:id' => 'jobs#show'
+      get '/jobs/companies/list' => 'jobs#companiesList'
+      get '/jobs/companies/list/:id' => 'jobs#companiesListById'
+      put '/jobs/companies/list/:id' => 'jobs#updateCompanyById'
 
 
       # User Module API Routes

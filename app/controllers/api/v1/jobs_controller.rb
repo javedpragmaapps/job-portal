@@ -318,6 +318,41 @@ class Api::V1::JobsController < ApplicationController
     end
   end
 
+
+  # This api will be used to collect the companies Listing
+  def companiesList
+
+    posts = Company.all();
+    render json: posts, status:200
+  end
+
+  # This api will be used to collect the companies Details
+  def companiesListById
+    companyDetails = Company.find_by(id: params[:id])
+    
+
+    if companyDetails
+      render json: companyDetails, status:200
+    else
+      render json: {
+          error: "Company Not Found."
+      } 
+    end
+  end
+
+  # This api will be used to update the companies Details
+  def updateCompanyById
+    companyDetails = Company.find_by(id: params[:id])
+
+    # check post is save or not
+    if companyDetails
+      companyDetails.update(name: params[:name],)
+      render json: companyDetails, status:200
+    else
+      render json: { error: "Company Not Found."} 
+    end
+  end
+
   private
   def insertCategoryRecords()
     CATEGORIES
