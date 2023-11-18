@@ -12,6 +12,7 @@ Rails.application.routes.draw do
       get '/jobs/companies/list' => 'jobs#companiesList'
       get '/jobs/companies/list/:id' => 'jobs#companiesListById'
       put '/jobs/companies/list/:id' => 'jobs#updateCompanyById'
+      post '/jobs/allocatejob/:user_id' => 'jobs#allocateJobsToUsers'
 
 
       # User Module API Routes

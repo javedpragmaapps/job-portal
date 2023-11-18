@@ -1,0 +1,2 @@
+class JobAllocation < ApplicationRecord
+end

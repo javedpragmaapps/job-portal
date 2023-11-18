@@ -353,6 +353,60 @@ class Api::V1::JobsController < ApplicationController
     end
   end
 
+  # This api will be used to allocate jobs to job agents
+  def allocateJobsToUsers
+
+    # check user is loggin or not; if not loggin return the error
+    collect_by = current_user_id = current_user.id
+    if !collect_by
+      render_json("User is not logging", 400, 'msg') and return
+    end
+
+    ## collect the endpoint paramteres
+    reference_number =  params[:reference_number]
+    allocated_to = user_id =  params[:user_id]
+    
+    ## check user is exist or not; so that correct user may be allocated
+    userDetails = User.find_by(id: params[:user_id])
+    if !userDetails
+      render_json('User Not Found', 400, 'msg') and return
+    end
+
+    ## checked provided reference_number is exist on the JOb table or not
+    ## if not exist return the error
+    jobFoundList = Job.where(reference_number: reference_number).pluck(:reference_number)
+    unmatchedJobs = reference_number - jobFoundList
+    if !unmatchedJobs.empty?
+      render_json("Job not found with these reference numbers: #{unmatchedJobs}", 400, 'msg') and return
+    end
+
+    ## check user already has a record in the job_allocations table or not
+    ## if exist, update the reference_number number else create the record
+    jobAllocationDetails = JobAllocation.find_by(allocated_to: user_id)
+    if !jobAllocationDetails
+      tempHash = {}
+      tempHash["allocated_by"] = collect_by
+      tempHash["allocated_to"] = allocated_to
+      tempHash["reference_number"] = reference_number
+      JobAllocation.create(tempHash)
+    else
+      jobAllocationDetails.reference_number = reference_number
+      jobAllocationDetails.save
+    end
+
+    ## now, updating the allocated_to column details in job table for these reference_number
+    ## so that reference_number may attached to the user
+    jobAllocationResponse = Job.where(reference_number: reference_number).update_all(allocated_to: allocated_to)
+    render json: jobAllocationDetails, status:200
+  end
+
+  # dafault funcation to render content
+  ## this way we can add multiple render funcation on the comtroller otherwise DoubleRenderError was triggered
+  def render_json(data, status_code, main_key = 'data')
+    render json: { "#{main_key}": data }, status: status_code
+  end
+
+
   private
   def insertCategoryRecords()
     CATEGORIES
