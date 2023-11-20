@@ -14,6 +14,14 @@ Rails.application.routes.draw do
       put '/jobs/companies/list/:id' => 'jobs#updateCompanyById'
       post '/jobs/allocatejob/:user_id' => 'jobs#allocateJobsToUsers'
 
+      
+      # applicants Module API Routes
+      get 'marketplace/applicants' => 'applicants#fetchAllApplicant'
+      # get 'applicants/index'
+      # get 'applicants/show'
+      # get 'applicants/create'
+      # get 'applicants/update'
+      # get 'applicants/destroy'
 
       # User Module API Routes
       get 'user/all' => 'user#index'
