@@ -1,0 +1,2 @@
+class UserFavJob < ApplicationRecord
+end

@@ -103,6 +103,41 @@ class Api::V1::ApplicantsController < ApplicationController
     end
   end
 
+
+  ## This API will be use to mark a favorite job
+  def markFavoriteJob
+
+    ## fetch refNum & fav from the payload
+    refNum = params[:refNum]
+    fav = params[:fav]
+    verified = true
+
+    # check user is loggin or not; if not loggin return the error
+    current_user_id = current_user.id || 0
+
+    ## checked provided reference_number is exist on the JOb table or not
+    ## if not exist return the error
+    jobFoundList = Job.where("verified =? AND reference_number =?", "#{verified}", "#{refNum}")
+    if jobFoundList.empty?
+      render_json("Sorry, no jobs are available for the provided job reference number.: #{refNum}", 400, 'message') and return
+    end
+
+    ## check if UserFavJob exists or not, if not create it
+    userFavJobExist = UserFavJob.where(referenceNumber: refNum).first_or_initialize(user_id: current_user_id)
+    if (fav === "true")
+      userFavJobExist.save
+      render_json('Job marked as favorite successfully!', 400, 'message') and return
+    elsif (userFavJobExist && fav === "false")
+      userFavJobExist.destroy
+      render_json('Job removed as favorite successfully!', 400, 'message') and return
+    end
+  end
+
+  ## This API Fetch list of favorite jobs
+  def listFavoriteJobs
+    render_json('listFavoriteJobs marked as favorite successfully!', 400, 'message') and return
+  end
+
   # dafault funcation to render content
   ## this way we can add multiple render funcation on the comtroller otherwise DoubleRenderError was triggered
   def render_json(data, status_code, main_key = 'data')
