@@ -1,0 +1,2 @@
+class UserReferralCode < ApplicationRecord
+end

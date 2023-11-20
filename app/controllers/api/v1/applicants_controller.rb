@@ -1,4 +1,5 @@
 class Api::V1::ApplicantsController < ApplicationController
+  skip_before_action :verify_authenticity_token
   def index
   end
 
@@ -50,6 +51,34 @@ class Api::V1::ApplicantsController < ApplicationController
     if applicantDetails
       render json: applicantDetails, status:200
     end
+  end
+
+  ## This API will be use to save the applicant information
+  def saveApplicant
+
+    ## fetch  job_referal_code from the payload
+    job_referal_code = params[:job_referal_code]
+    email = params[:email]
+    reference_number = params[:reference_number]
+
+    ## check if job_referal_code exists in referral code table or not
+    userReferralCodeDetails = UserReferralCode.find_by(referral_code: job_referal_code)
+    if !userReferralCodeDetails
+      render_json('Sorry, no jobs are available for the provided job referral code. Please double-check the job referral code and try again.', 400, 'msg') and return
+    end
+
+    ## fetch CPA details from userReferralCode table
+    cpa = userReferralCodeDetails["cpa"]
+
+    ## check email and reference_number are not already save into the database
+    existingApplicant =  Applicant.where("email =? AND reference_number =?", "#{email}", "#{reference_number}")
+    if !existingApplicant.empty?
+      render_json('Your application for this job has already been submitted. Thank you for your interest!', 400, 'msg') and return
+    end
+
+    ## save it to the database
+    applicantDetails = Applicant.create(JSON.parse(request.raw_post))
+    render json: applicantDetails
   end
 
   # dafault funcation to render content

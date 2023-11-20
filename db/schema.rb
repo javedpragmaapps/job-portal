@@ -10,8 +10,8 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2023_11_18_153515) do
-  create_table "applicants", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+ActiveRecord::Schema[7.1].define(version: 2023_11_20_055532) do
+  create_table "applicants", id: { type: :string, limit: 36 }, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "reference_number", null: false
     t.string "firstname", null: false
     t.string "lastname", null: false
@@ -102,6 +102,14 @@ ActiveRecord::Schema[7.1].define(version: 2023_11_18_153515) do
     t.index ["category_id"], name: "FK_15f44c4b9fbb84e28a0346e930f"
     t.index ["company_id"], name: "FK_51cb12c924d3e8c7465cc8edff2"
     t.index ["reference_number"], name: "IDX_73eb63da5bd0fe1f83ab6fbe57", unique: true
+  end
+
+  create_table "user_referral_codes", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "user_id", null: false
+    t.integer "job_reference_number", null: false
+    t.string "referral_code", null: false
+    t.integer "cpa", null: false
+    t.datetime "created_at", precision: nil, default: -> { "CURRENT_TIMESTAMP" }, null: false
   end
 
   create_table "users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
