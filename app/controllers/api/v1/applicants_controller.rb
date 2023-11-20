@@ -81,6 +81,28 @@ class Api::V1::ApplicantsController < ApplicationController
     render json: applicantDetails
   end
 
+  ## This API will be use to update the applicant details
+  def updateApplicant
+
+    ## fetch  job_referal_code from the payload
+    id = params[:id]
+    applicantDetails = Applicant.where(id: id).update(JSON.parse(request.raw_post))
+    render json: applicantDetails
+  end
+
+  ## This API will be use to delete the applicant
+  def deleteApplicantById
+    ## fetch  job_referal_code from the payload
+    id = params[:id]
+    applicantDetails = Applicant.find_by(id: id)
+    if applicantDetails
+      applicantDetails.destroy
+      render json:  { error: "Applicant has been deleted."} 
+    else
+      render json: { error: "Applicant Not Found."} 
+    end
+  end
+
   # dafault funcation to render content
   ## this way we can add multiple render funcation on the comtroller otherwise DoubleRenderError was triggered
   def render_json(data, status_code, main_key = 'data')

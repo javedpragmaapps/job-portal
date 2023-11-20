@@ -18,6 +18,8 @@ Rails.application.routes.draw do
       # applicants Module API Routes
       get 'marketplace/applicants' => 'applicants#fetchAllApplicant'
       post 'marketplace/applicants' => 'applicants#saveApplicant'
+      put 'marketplace/:id' => 'applicants#updateApplicant'
+      delete 'marketplace/:id' => 'applicants#deleteApplicantById'
       # get 'applicants/index'
       # get 'applicants/show'
       # get 'applicants/create'
