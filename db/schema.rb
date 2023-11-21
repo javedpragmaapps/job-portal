@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2023_11_21_052927) do
+ActiveRecord::Schema[7.1].define(version: 2023_11_21_081809) do
   create_table "applicants", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "reference_number", null: false
     t.string "firstname", null: false
@@ -104,6 +104,18 @@ ActiveRecord::Schema[7.1].define(version: 2023_11_21_052927) do
     t.index ["reference_number"], name: "IDX_73eb63da5bd0fe1f83ab6fbe57", unique: true
   end
 
+  create_table "transactions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.integer "redeemed_amount", null: false
+    t.datetime "created_at", precision: nil, default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.string "idd", null: false
+    t.string "user_id", null: false
+    t.string "transaction_id", null: false
+    t.integer "status", limit: 1
+    t.string "approved_by"
+    t.datetime "approved_at", precision: nil
+    t.index ["user_id"], name: "FK_b4a3d92d5dde30f3ab5c34c5862"
+  end
+
   create_table "user_fav_jobs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "user_id", null: false
     t.integer "referenceNumber", null: false
@@ -140,6 +152,14 @@ ActiveRecord::Schema[7.1].define(version: 2023_11_21_052927) do
     t.index ["jobAllocationsId"], name: "index_users_on_jobAllocationsId", unique: true
     t.index ["jti"], name: "index_users_on_jti"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+  end
+
+  create_table "users_cpas", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.integer "current_total_cpa", default: 0, null: false
+    t.datetime "updated_at", precision: nil, default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "created_at", precision: nil, default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.string "userId", limit: 36
+    t.index ["userId"], name: "FK_a904fb2854b42e8a4aac68faf7d"
   end
 
 end

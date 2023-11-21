@@ -24,11 +24,11 @@ Rails.application.routes.draw do
       get 'marketplace/favorite/jobs' => 'applicants#listFavoriteJobs'
       get 'marketplace/referredjobs' => 'applicants#referredjobs'
       get 'marketplace/jobs/categories' => 'applicants#jobCategories'
-      # get 'applicants/index'
-      # get 'applicants/show'
-      # get 'applicants/create'
-      # get 'applicants/update'
-      # get 'applicants/destroy'
+      
+      ## Wallet Module API Routes
+      get 'wallet' => 'wallet#getWallet'
+      # get 'wallet/index'
+      # get 'wallet/update'
 
       # User Module API Routes
       get 'user/all' => 'user#index'

@@ -1,0 +1,2 @@
+class UsersCpa < ApplicationRecord
+end
