@@ -22,6 +22,8 @@ Rails.application.routes.draw do
       delete 'marketplace/applicants/:id' => 'applicants#deleteApplicantById'
       put 'marketplace/favorite' => 'applicants#markFavoriteJob'
       get 'marketplace/favorite/jobs' => 'applicants#listFavoriteJobs'
+      get 'marketplace/referredjobs' => 'applicants#referredjobs'
+      get 'marketplace/jobs/categories' => 'applicants#jobCategories'
       # get 'applicants/index'
       # get 'applicants/show'
       # get 'applicants/create'

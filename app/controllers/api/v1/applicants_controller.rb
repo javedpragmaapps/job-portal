@@ -135,7 +135,52 @@ class Api::V1::ApplicantsController < ApplicationController
 
   ## This API Fetch list of favorite jobs
   def listFavoriteJobs
-    render_json('listFavoriteJobs marked as favorite successfully!', 400, 'message') and return
+
+    ## fetch parameters from the payload
+    fav = params[:fav]
+    refNum = params[:refNum]
+
+    # check user is loggin or not; if not loggin return the error
+    current_user_id = current_user.id || 0
+
+    # # this statement partial copied from the source code
+    # sql_statement  = "select * from jobs as j
+    # inner join User_fav_jobs as ufj ON j.reference_number = ufj.referenceNumber
+    # where ufj.user_id = #{current_user_id}"
+    # results = ActiveRecord::Base.connection.execute(sql_statement)
+
+    ## fetch the fav jobs results
+    userFavJobDetails = UserFavJob.where("user_id =? AND referenceNumber =?", "#{current_user_id}", "#{refNum}")
+    if userFavJobDetails.empty?
+      render_json("Sorry, no fav jobs are available for the provided job reference number: #{refNum}", 400, 'message') and return
+    else
+      render json: userFavJobDetails, status:200
+    end    
+  end
+
+  ## This API Fetch the referredjobs jobs details
+  def referredjobs
+
+    # check user is loggin or not; if not loggin return the error
+    current_user_id = current_user.id || 0
+
+    # sql_statement  = "select * from jobs as j
+    # inner join User_fav_jobs as urc ON urc.job_reference_number = j.reference_number
+    # where urc.user_id = #{current_user_id}"
+    # results = ActiveRecord::Base.connection.exec_query(sql_statement)
+
+    results = UserFavJob.find_by_sql "select j.* from jobs as j
+    inner join user_referral_codes as urc ON urc.job_reference_number = j.reference_number
+    where urc.user_id = #{current_user_id}"
+  
+
+    render json: results, status:200
+  end
+
+  ## This API Fetch the job categories details
+  def jobCategories
+    posts = Category.all();
+    render json: posts, status:200 
   end
 
   # dafault funcation to render content

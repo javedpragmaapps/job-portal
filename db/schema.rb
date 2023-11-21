@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2023_11_20_123233) do
+ActiveRecord::Schema[7.1].define(version: 2023_11_21_052927) do
   create_table "applicants", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "reference_number", null: false
     t.string "firstname", null: false
@@ -39,7 +39,7 @@ ActiveRecord::Schema[7.1].define(version: 2023_11_20_123233) do
     t.json "employment_history"
   end
 
-  create_table "category", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "categories", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "title", null: false
     t.datetime "created_at", precision: nil, default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.index ["title"], name: "IDX_9f16dbbf263b0af0f03637fa7b", unique: true
