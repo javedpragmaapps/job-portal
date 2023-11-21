@@ -27,6 +27,7 @@ Rails.application.routes.draw do
       
       ## Wallet Module API Routes
       get 'wallet' => 'wallet#getWallet'
+      post 'wallet/redeem' => 'wallet#redeemRequest'
       # get 'wallet/index'
       # get 'wallet/update'
 
