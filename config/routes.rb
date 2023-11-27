@@ -29,9 +29,10 @@ Rails.application.routes.draw do
       get 'wallet' => 'wallet#getWallet'
       post 'wallet/redeem' => 'wallet#redeemRequest'
       get 'wallet/transactions' => 'wallet#fetchPendingTransactions'
-      get 'wallet/transactions/:id' => 'wallet#updateTransaction'
-      # get 'wallet/index'
-      # get 'wallet/update'
+      post 'wallet/transactions/:id' => 'wallet#updateTransaction'
+
+      ## Dashboard Module API Routes
+      get 'dashboard/categories' => 'dashboard#index'
 
       # User Module API Routes
       get 'user/all' => 'user#index'

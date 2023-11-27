@@ -92,7 +92,31 @@ class Api::V1::WalletController < ApplicationController
   end
 
   def updateTransaction
-    render json: { error: "Company Not Found."} 
+    
+    ## get parameters
+    body = request.raw_post
+    status = params[:status]
+    transactionId = params[:id]
+
+    transaction = Transaction.find_by(idd: transactionId)
+    if !transaction
+      render_json("Sorry, the transaction with ID: does not exist: #{transactionId}", 400, 'message') and return
+    end
+
+    # check user is loggin or not; if not loggin return the error
+    if !current_user
+      render_json('User is not logging, Please login first.', 400, 'msg') and return
+    end
+    current_user_id = current_user.id || 0
+
+    ## updating user's total cpa logic
+    if (status === true) 
+      pendingTrnSum = handleCPALogic(transactionId)
+    end
+    
+    ## update body against the given id
+    response = transaction.update(approved_by: current_user_id, approved_at: DateTime.now )
+    render json: {data: transaction, message: 'Transaction updated successfully',}
   end
 
 
@@ -100,6 +124,34 @@ class Api::V1::WalletController < ApplicationController
   ## this way we can add multiple render funcation on the comtroller otherwise DoubleRenderError was triggered
   def render_json(data, status_code, main_key = 'data')
     render json: { "#{main_key}": data }, status: status_code
+  end
+
+  private
+  def handleCPALogic(transactionId)
+    transactionIs = Transaction.find_by(idd: transactionId)
+    if !transactionIs
+      render_json("transactionId not exist.", 400, 'message') and return
+    end
+
+    ## get transaction data
+    redeemed_amount =  transactionIs["redeemed_amount"]
+    user_id =   transactionIs["user_id"]
+
+    ## find current cpa amount
+    currentTotalCPA = UsersCpa.find_by(userId: user_id)
+    if !currentTotalCPA
+      render_json("No records available in users_CPA table against the user_id.", 400, 'message') and return
+    end
+
+    ## get updated value of CPA
+    current_total_cpa = currentTotalCPA["current_total_cpa"]
+    puts current_total_cpa
+    puts redeemed_amount
+    if (current_total_cpa > redeemed_amount)
+      updatedValueOfCurrentCpa = current_total_cpa - redeemed_amount
+      currentTotalCPA.current_total_cpa = updatedValueOfCurrentCpa
+      currentTotalCPA.save
+    end
   end
 
 end
