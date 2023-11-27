@@ -32,7 +32,8 @@ Rails.application.routes.draw do
       post 'wallet/transactions/:id' => 'wallet#updateTransaction'
 
       ## Dashboard Module API Routes
-      get 'dashboard/categories' => 'dashboard#index'
+      get 'dashboard/categories' => 'dashboard#fetchCategorisedData'
+      get 'dashboard/counts' => 'dashboard#getCountForDashboard'
 
       # User Module API Routes
       get 'user/all' => 'user#index'
