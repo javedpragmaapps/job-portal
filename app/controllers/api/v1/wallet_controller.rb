@@ -75,6 +75,27 @@ class Api::V1::WalletController < ApplicationController
     end
   end
 
+  ## This API will be use to fetch the pending transactions
+  def fetchPendingTransactions
+
+    ## fetch params payload
+    limit = params[:limit] || 25
+    status = params[:status]
+
+    ## get the list of transactions
+    transaction_list = Transaction.where("status =?", "#{status}").limit(limit)
+
+    ## get the total result count
+    transactionTotal =  Transaction.count
+
+    render json: {data: transaction_list, transactionTotal: transactionTotal}
+  end
+
+  def updateTransaction
+    render json: { error: "Company Not Found."} 
+  end
+
+
   # dafault funcation to render content
   ## this way we can add multiple render funcation on the comtroller otherwise DoubleRenderError was triggered
   def render_json(data, status_code, main_key = 'data')
