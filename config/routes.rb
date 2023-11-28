@@ -35,6 +35,11 @@ Rails.application.routes.draw do
       get 'dashboard/categories' => 'dashboard#fetchCategorisedData'
       get 'dashboard/counts' => 'dashboard#getCountForDashboard'
 
+      # User Role API Routes
+      resources :role, only: [:index, :show, :create, :update, :destroy]
+      # get 'role' => 'role#fetchListofRoles'
+      # get 'role/index'
+
       # User Module API Routes
       get 'user/all' => 'user#index'
       # resources :user, only: [:index, :show, :create, :update, :destroy]

@@ -1,8 +1,15 @@
 class User < ApplicationRecord
+  rolify
   include Devise::JWT::RevocationStrategies::JTIMatcher
 
   devise :database_authenticatable, :registerable, :recoverable, :validatable,
          :jwt_authenticatable, jwt_revocation_strategy: self
+
+  after_create :assign_default_role
+
+  def assign_default_role
+    self.add_role(:admin) if self.roles.blank?
+  end
 
   def self.calculateTotalCpa(id)
     usersCPA_details = UsersCpa.find_by(userId: id)

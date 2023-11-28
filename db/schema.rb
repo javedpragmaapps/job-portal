@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2023_11_21_081809) do
+ActiveRecord::Schema[7.1].define(version: 2023_11_28_083909) do
   create_table "applicants", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "reference_number", null: false
     t.string "firstname", null: false
@@ -104,6 +104,17 @@ ActiveRecord::Schema[7.1].define(version: 2023_11_21_081809) do
     t.index ["reference_number"], name: "IDX_73eb63da5bd0fe1f83ab6fbe57", unique: true
   end
 
+  create_table "roles", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "name"
+    t.string "resource_type"
+    t.bigint "resource_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name", "resource_type", "resource_id"], name: "index_roles_on_name_and_resource_type_and_resource_id"
+    t.index ["name"], name: "index_roles_on_name"
+    t.index ["resource_type", "resource_id"], name: "index_roles_on_resource"
+  end
+
   create_table "transactions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "redeemed_amount", null: false
     t.datetime "created_at", precision: nil, default: -> { "CURRENT_TIMESTAMP" }, null: false
@@ -160,6 +171,14 @@ ActiveRecord::Schema[7.1].define(version: 2023_11_21_081809) do
     t.datetime "created_at", precision: nil, default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.string "userId", limit: 36
     t.index ["userId"], name: "FK_a904fb2854b42e8a4aac68faf7d"
+  end
+
+  create_table "users_roles", id: false, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "user_id"
+    t.bigint "role_id"
+    t.index ["role_id"], name: "index_users_roles_on_role_id"
+    t.index ["user_id", "role_id"], name: "index_users_roles_on_user_id_and_role_id"
+    t.index ["user_id"], name: "index_users_roles_on_user_id"
   end
 
 end
