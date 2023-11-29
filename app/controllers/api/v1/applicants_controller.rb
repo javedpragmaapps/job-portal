@@ -113,6 +113,9 @@ class Api::V1::ApplicantsController < ApplicationController
     verified = true
 
     # check user is loggin or not; if not loggin return the error
+    if !current_user
+      render_json('User is not logging, Please login first.', 400, 'msg') and return
+    end
     current_user_id = current_user.id || 0
 
     ## checked provided reference_number is exist on the JOb table or not
@@ -141,6 +144,9 @@ class Api::V1::ApplicantsController < ApplicationController
     refNum = params[:refNum]
 
     # check user is loggin or not; if not loggin return the error
+    if !current_user
+      render_json('User is not logging, Please login first.', 400, 'msg') and return
+    end
     current_user_id = current_user.id || 0
 
     # # this statement partial copied from the source code
@@ -162,6 +168,9 @@ class Api::V1::ApplicantsController < ApplicationController
   def referredjobs
 
     # check user is loggin or not; if not loggin return the error
+    if !current_user
+      render_json('User is not logging, Please login first.', 400, 'msg') and return
+    end
     current_user_id = current_user.id || 0
 
     # sql_statement  = "select * from jobs as j

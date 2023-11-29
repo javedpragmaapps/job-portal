@@ -5,6 +5,9 @@ class Api::V1::WalletController < ApplicationController
   def getWallet
 
     # check user is loggin or not; if not loggin return the error
+    if !current_user
+      render_json('User is not logging, Please login first.', 400, 'msg') and return
+    end
     current_user_id = current_user.id || 0
 
     posts = Transaction.where("user_id =?", "#{current_user_id}")
