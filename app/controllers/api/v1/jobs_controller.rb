@@ -408,12 +408,62 @@ class Api::V1::JobsController < ApplicationController
 
 
   private
+
+  ## This API will insert the categories(from Global variable) into the database
   def insertCategoryRecords()
-    CATEGORIES
+
+    ## fetch all categories from database
+    db_categories = []
+    categories_array = Category.select("title").all();
+    categories_array.each { |category|
+      db_categories.push(category['title'])
+    }
+
+    ## get static categories 
+    ## find record exist or not; if not create the
+    CATEGORIES.each { |name|
+      # check name exist in category database or not; if not save it
+      is_category_exist_in_db = db_categories.index(name)
+      if !is_category_exist_in_db
+        category_exist = Category.find_or_initialize_by(title: name)
+        if !category_exist.id
+          category_exist.title = name
+          category_exist.save
+        end
+      end
+    }
+
+    ## return response
+    return db_categories
   end
 
   def insertCompanyRecords()
-    CompaniesList
+
+    ## get static categories 
+    ## find record exist or not; if not create the
+    CompaniesList.each { |company|
+    # check name exist in company database or not; if not save it
+      company_exist = Company.find_by(name: company[:name])
+      if !company_exist
+        applicantDetails = Company.create(company)
+      end
+    }
+
+    ## fetch all copanies from database
+    db_companies = []
+    company_array = Company.all();
+    company_array.map do |u|
+      testt = {
+        :name => u.name, :phone => u.phone, :email => u.email, :website => u.website, :city => u.city,
+        :state => u.state, :country => u.country, :primary_industry => u.primary_industry, :founded_in => u.founded_in,
+        :logo => u.logo, :social_handles => u.social_handles, :company_size => u.company_size, :description => u.description,
+        :latitude => u.latitude, :longitude => u.longitude
+      }
+      db_companies.push(testt)
+    end
+
+    # return ressponse
+    return db_companies
   end
 
   def getMinMaxValue(a, b)
