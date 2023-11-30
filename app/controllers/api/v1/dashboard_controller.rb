@@ -53,12 +53,13 @@ class Api::V1::DashboardController < ApplicationController
 
   ## this fn will return the number of records avaialble in both the tables (includes approved applicants count & verified jobs)
   def getCountForDashboard
-
+    
     # check user is loggin or not; if not loggin return the error
-    if !current_user
-      render_json('User is not logging, Please login first.', 400, 'msg') and return
+    if !request.headers['Authorization']
+      render_json('User Authorization token is required and can not be empty.', 400, 'msg') and return
     end
-    current_user_id = current_user.id || 0
+    jwt_payload = JWT.decode(request.headers['Authorization'].split(' ').last, Rails.application.credentials.devise_jwt_secret_key!).first
+    current_user_id = jwt_payload['id'] || 0
 
     ## get parameters
     marketplace = params[:marketplace]

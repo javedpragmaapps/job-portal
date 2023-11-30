@@ -111,12 +111,13 @@ class Api::V1::ApplicantsController < ApplicationController
     refNum = params[:refNum]
     fav = params[:fav]
     verified = true
-
+    
     # check user is loggin or not; if not loggin return the error
-    if !current_user
-      render_json('User is not logging, Please login first.', 400, 'msg') and return
+    if !request.headers['Authorization']
+      render_json('User Authorization token is required and can not be empty.', 400, 'msg') and return
     end
-    current_user_id = current_user.id || 0
+    jwt_payload = JWT.decode(request.headers['Authorization'].split(' ').last, Rails.application.credentials.devise_jwt_secret_key!).first
+    current_user_id = jwt_payload['id'] || 0
 
     ## checked provided reference_number is exist on the JOb table or not
     ## if not exist return the error
@@ -142,36 +143,85 @@ class Api::V1::ApplicantsController < ApplicationController
     ## fetch parameters from the payload
     fav = params[:fav]
     refNum = params[:refNum]
-
+    limit = params[:limit] || 20
+    page = params[:page] ?(params[:page].to_i- 1) : 0
+    offset = page.to_i * limit.to_i
+    
     # check user is loggin or not; if not loggin return the error
-    if !current_user
-      render_json('User is not logging, Please login first.', 400, 'msg') and return
+    if !request.headers['Authorization']
+      render_json('User Authorization token is required and can not be empty.', 400, 'msg') and return
     end
-    current_user_id = current_user.id || 0
+    jwt_payload = JWT.decode(request.headers['Authorization'].split(' ').last, Rails.application.credentials.devise_jwt_secret_key!).first
+    current_user_id = jwt_payload['id'] || 0
 
-    # # this statement partial copied from the source code
-    # sql_statement  = "select * from jobs as j
-    # inner join User_fav_jobs as ufj ON j.reference_number = ufj.referenceNumber
-    # where ufj.user_id = #{current_user_id}"
-    # results = ActiveRecord::Base.connection.execute(sql_statement)
+    results = Job.find_by_sql "SELECT j.*, cat.id as cat_id, cat.created_at as cat_created_at, cat.title as cat_title, com.* FROM jobs as j
+        inner Join User_fav_jobs as ufj ON j.reference_number = ufj.referenceNumber
+        left Join categories as cat ON j.category_id = cat.id
+        left Join companies as com ON j.company_id = com.id
+        where ufj.user_id = #{current_user_id}
+        order by j.created_at DESC 
+        LIMIT #{limit} OFFSET #{offset}
+        "
 
-    ## fetch the fav jobs results
-    userFavJobDetails = UserFavJob.where("user_id =? AND referenceNumber =?", "#{current_user_id}", "#{refNum}")
-    if userFavJobDetails.empty?
-      render_json("Sorry, no fav jobs are available for the provided job reference number: #{refNum}", 400, 'message') and return
-    else
-      render json: userFavJobDetails, status:200
-    end    
+    db_all_data = []
+    results.each do |item|
+      tempHash = {}
+
+      ## getting data from jobs table
+      tempHash["id"] = item.id
+      tempHash["reference_number"] = item.reference_number
+      tempHash["title"] = item.title
+      tempHash["city"] = item.city
+      tempHash["state"] = item.state
+      tempHash["category_id"] = item.category_id
+      tempHash["company_id"] = item.company_id
+      tempHash["emp_type"] = item.emp_type
+      tempHash["date"] = item.date
+      tempHash["experience"] = item.experience
+      tempHash["salary"] = item.salary
+      tempHash["cpa"] = item.cpa
+      tempHash["verified"] = item.verified
+      tempHash["description"] = item.description
+      tempHash["skills"] = item.skills
+      tempHash["critical_resp"] = item.critical_resp
+      tempHash["qualification"] = item.qualification
+      tempHash["created_at"] = item.created_at
+      tempHash["updated_at"] = item.updated_at
+      tempHash["updated_by"] = item.updated_by
+      tempHash["approved_by"] = item.approved_by
+      tempHash["approved_at"] = item.approved_at
+      tempHash["allocated_to"] = item.allocated_to
+
+      ## getting data from category table
+      tempHash["category"] = {
+        id: item.cat_id, title: item.cat_title, created_at: item.created_at
+      }
+
+      ## getting data from company table
+      tempHash["company"] = {
+        id: item.cat_id, name: item.name, phone: item.phone, email: item.email, website: item.website, city: item.city,
+        state: item.state, country: item.country, primary_industry: item.primary_industry, founded_in: item.founded_in,
+        logo: item.logo, social_handles: item.social_handles, company_size: item.company_size, description: item.description,
+        created_at: item.created_at,latitude: item.latitude,longitude: item.longitude
+      }
+
+      ##pushing this tempHash into the main array
+      db_all_data.push(tempHash)
+    end
+
+    ## return response
+    render json: {data: db_all_data, count: results.count}, status:200
   end
 
   ## This API Fetch the referredjobs jobs details
   def referredjobs
-
+    
     # check user is loggin or not; if not loggin return the error
-    if !current_user
-      render_json('User is not logging, Please login first.', 400, 'msg') and return
+    if !request.headers['Authorization']
+      render_json('User Authorization token is required and can not be empty.', 400, 'msg') and return
     end
-    current_user_id = current_user.id || 0
+    jwt_payload = JWT.decode(request.headers['Authorization'].split(' ').last, Rails.application.credentials.devise_jwt_secret_key!).first
+    current_user_id = jwt_payload['id'] || 0
 
     # sql_statement  = "select * from jobs as j
     # inner join User_fav_jobs as urc ON urc.job_reference_number = j.reference_number

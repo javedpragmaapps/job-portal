@@ -6,12 +6,33 @@ class Users::SessionsController < Devise::SessionsController
 
   private
 
-  def respond_with(current_user, _opts = {})
+  def respond_with_BAK(current_user, _opts = {})
     render json: {
       status: { 
         code: 200, message: 'Logged in successfully.',
         data: { user: UserSerializer.new(current_user).serializable_hash[:data][:attributes] }
       }
+    }, status: :ok
+  end
+
+  def respond_with(current_user, _opts = {})
+    role = current_user.add_role :marketplace_user
+    custom_jwt_payload = UserSerializer.new(current_user).serializable_hash[:data][:attributes]
+    custom_jwt_payload["role"]  = "marketplace_user"
+    custom_jwt_payload["categories"]  = ""
+    custom_jwt_payload["socialhandles"]  = ""
+    custom_jwt_payload["profile"]  = ""
+    custom_jwt_payload["userscpa"]  = ""
+    custom_jwt_payload["scope"]  = ""
+    custom_jwt_payload["allocatedJobs"]  = ""
+    custom_jwt_payload["total_cpa"]  = ""
+    # custom_jwt_payload["iat"]  = ""
+    # custom_jwt_payload["exp"]  = 0
+    
+    secret = Rails.application.credentials.devise_jwt_secret_key!
+    render json: {
+      # current_user: current_user,
+      access_token: JWT.encode(custom_jwt_payload, secret)
     }, status: :ok
   end
 
