@@ -11,8 +11,8 @@ class Api::V1::WalletController < ApplicationController
     jwt_payload = JWT.decode(request.headers['Authorization'].split(' ').last, Rails.application.credentials.devise_jwt_secret_key!).first
     current_user_id = jwt_payload['id'] || 0
 
-    posts = Transaction.where("user_id =?", "#{current_user_id}")
-    transaction_count = Transaction.count
+    posts = Transaction.where("user_id =?", "#{current_user_id}").order("created_at DESC")
+    transaction_count = posts.count
     total_cpa = User.calculateTotalCpa(current_user_id)
     render json: {data: posts, total: transaction_count, total_cpa: total_cpa}
   end
@@ -22,22 +22,25 @@ class Api::V1::WalletController < ApplicationController
 
   ## this API will raise redeem request for the user's
   def redeemRequest
+    
+    # check user is loggin or not; if not loggin return the error
+    if !request.headers['Authorization']
+      render_json('User Authorization token is required and can not be empty.', 400, 'msg') and return
+    end
+    jwt_payload = JWT.decode(request.headers['Authorization'].split(' ').last, Rails.application.credentials.devise_jwt_secret_key!).first
+    current_user_id = jwt_payload['id'] || 0
 
     ## fetch parameters from the payload
     redeemAmount = params[:redeemAmount]
-
-    # check user is loggin or not; if not loggin return the error
-    current_user_id = current_user.id || 0
     currentTotalCpa = User.calculateTotalCpa(current_user_id)
 
     # Calculate pending status amount for this user
     pendingTrnSum = calculatePendingTransactionSum(current_user_id)
-    availableCpa = currentTotalCpa.to_i - pendingTrnSum.to_i;
+    availableCpa = currentTotalCpa.to_i - pendingTrnSum.to_i
 
     if (redeemAmount > availableCpa)
       render_json("Sorry, you do not have enough CPA points to redeem this amount.", 400, 'message') and return
     end
-
 
     ## get the transactionId
     transaction_id = generateTransactionId()
@@ -59,7 +62,7 @@ class Api::V1::WalletController < ApplicationController
     end
 
     results = Transaction.find_by_sql "select SUM(redeemed_amount) as sum from transactions
-    where user_id = '#{current_user_id}'"
+    where user_id = '#{current_user_id}' AND status IS NULL"
     result = results.pluck(:sum).join(',')
   end
 

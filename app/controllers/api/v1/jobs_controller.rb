@@ -311,7 +311,7 @@ class Api::V1::JobsController < ApplicationController
 
       ## getting data from category table
       tempHash["category"] = {
-        id: item.id, title: item.title, created_at: item.created_at
+        id: item.cat_id, title: item.cat_title, created_at: item.created_at
       }
 
       ## getting data from company table

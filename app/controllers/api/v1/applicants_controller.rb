@@ -175,7 +175,7 @@ class Api::V1::ApplicantsController < ApplicationController
       tempHash["state"] = item.state
       tempHash["category_id"] = item.category_id
       tempHash["company_id"] = item.company_id
-      tempHash["emp_type"] = item.emp_type
+      tempHash["emp_type"] = [item.emp_type]
       tempHash["date"] = item.date
       tempHash["experience"] = item.experience
       tempHash["salary"] = item.salary
@@ -228,12 +228,65 @@ class Api::V1::ApplicantsController < ApplicationController
     # where urc.user_id = #{current_user_id}"
     # results = ActiveRecord::Base.connection.exec_query(sql_statement)
 
-    results = UserFavJob.find_by_sql "select j.* from jobs as j
-    inner join user_referral_codes as urc ON urc.job_reference_number = j.reference_number
-    where urc.user_id = #{current_user_id}"
-  
+    # results = UserFavJob.find_by_sql "select j.* from jobs as j
+    # inner join user_referral_codes as urc ON urc.job_reference_number = j.reference_number
+    # where urc.user_id = #{current_user_id}"
 
-    render json: results, status:200
+
+    results = Job
+    .joins("inner join user_referral_codes as urc ON urc.job_reference_number = jobs.reference_number")
+    .joins("join categories as cat ON cat.id = jobs.category_id")
+    .joins("join companies as com ON com.id = jobs.company_id")
+    .select("Jobs.*,cat.id as cat_id,cat.title as cat_title,com.*")
+
+    db_all_data = []
+    results.each do |item|
+      tempHash = {}
+
+      ## getting data from jobs table
+      tempHash["id"] = item.id
+      tempHash["reference_number"] = item.reference_number
+      tempHash["title"] = item.title
+      tempHash["city"] = item.city
+      tempHash["state"] = item.state
+      tempHash["category_id"] = item.category_id
+      tempHash["company_id"] = item.company_id
+      tempHash["emp_type"] = [item.emp_type]
+      tempHash["date"] = item.date
+      tempHash["experience"] = item.experience
+      tempHash["salary"] = item.salary
+      tempHash["cpa"] = item.cpa
+      tempHash["verified"] = item.verified
+      tempHash["description"] = item.description
+      tempHash["skills"] = item.skills
+      tempHash["critical_resp"] = item.critical_resp
+      tempHash["qualification"] = item.qualification
+      tempHash["created_at"] = item.created_at
+      tempHash["updated_at"] = item.updated_at
+      tempHash["updated_by"] = item.updated_by
+      tempHash["approved_by"] = item.approved_by
+      tempHash["approved_at"] = item.approved_at
+      tempHash["allocated_to"] = item.allocated_to
+
+      ## getting data from category table
+      tempHash["category"] = {
+        id: item.id, title: item.title, created_at: item.created_at
+      }
+
+      ## getting data from company table
+      tempHash["company"] = {
+        id: item.id, name: item.name, phone: item.phone, email: item.email, website: item.website, city: item.city,
+        state: item.state, country: item.country, primary_industry: item.primary_industry, founded_in: item.founded_in,
+        logo: item.logo, social_handles: item.social_handles, company_size: item.company_size, description: item.description,
+        created_at: item.created_at,latitude: item.latitude,longitude: item.longitude
+      }
+
+      ##pushing this tempHash into the main array
+      db_all_data.push(tempHash)
+    end
+  
+    ##return reponse
+    render json: {referredJobs: db_all_data}, status:200
   end
 
   ## This API Fetch the job categories details
