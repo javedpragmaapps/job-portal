@@ -48,7 +48,7 @@ class Api::V1::DashboardController < ApplicationController
     jobTypes["recentJobs"] = recentJobs
     
     ## return response
-    render json: {jobsCount: jobsCount, location: concatenatedLocation, categories: categories, jobTypes: jobTypes}
+    render json: {jobsCount: jobsCount, location: concatenatedLocation, categories: categories, jobs: jobTypes}
   end
 
   ## this fn will return the number of records avaialble in both the tables (includes approved applicants count & verified jobs)
