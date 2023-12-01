@@ -273,14 +273,12 @@ class Api::V1::JobsController < ApplicationController
   end
   
   def index
-    posts = Job.all();
-
-    # temp = Job.joins(:category).where(Job.category_id = Category.id)
-    # temp = Job.joins(:category, :company)
+    
+    ## get the jobs data along with the category and companies
     results = Job
     .joins("join categories ON categories.id = jobs.category_id")
     .joins("join companies ON companies.id = jobs.company_id")
-    .select("Jobs.*,categories.*,companies.*")
+    .select("Jobs.*,categories.id as cat_id,categories.title as cat_title,companies.*")
 
     db_all_data = []
     results.each do |item|
@@ -333,9 +331,74 @@ class Api::V1::JobsController < ApplicationController
   end
 
   def show
+
+    ## fetch params payload
+    reference_number = params[:id]
+    if !reference_number
+      render_json("reference_number is required field and can not be empty", 400) and return
+    end
+    
+    ## get the jobs data along with the category and companies
+    results = Job
+    .joins("join categories ON categories.id = jobs.category_id")
+    .joins("join companies ON companies.id = jobs.company_id")
+    .select("Jobs.*,categories.id as cat_id,categories.title as cat_title,companies.*")
+    .where("jobs.reference_number = #{reference_number}")
+
+    db_all_data = []
+    results.each do |item|
+      tempHash = {}
+
+      ## getting data from jobs table
+      tempHash["id"] = item.id
+      tempHash["reference_number"] = item.reference_number
+      tempHash["title"] = item.title
+      tempHash["city"] = item.city
+      tempHash["state"] = item.state
+      tempHash["category_id"] = item.category_id
+      tempHash["company_id"] = item.company_id
+      tempHash["emp_type"] = [item.emp_type]
+      tempHash["date"] = item.date
+      tempHash["experience"] = item.experience
+      tempHash["salary"] = item.salary
+      tempHash["cpa"] = item.cpa
+      tempHash["verified"] = item.verified
+      tempHash["description"] = item.description
+      tempHash["skills"] = item.skills
+      tempHash["critical_resp"] = item.critical_resp
+      tempHash["qualification"] = item.qualification
+      tempHash["created_at"] = item.created_at
+      tempHash["updated_at"] = item.updated_at
+      tempHash["updated_by"] = item.updated_by
+      tempHash["approved_by"] = item.approved_by
+      tempHash["approved_at"] = item.approved_at
+      tempHash["allocated_to"] = item.allocated_to
+
+      ## getting data from category table
+      tempHash["category"] = {
+        id: item.id, title: item.title, created_at: item.created_at
+      }
+
+      ## getting data from company table
+      tempHash["company"] = {
+        id: item.id, name: item.name, phone: item.phone, email: item.email, website: item.website, city: item.city,
+        state: item.state, country: item.country, primary_industry: item.primary_industry, founded_in: item.founded_in,
+        logo: item.logo, social_handles: item.social_handles, company_size: item.company_size, description: item.description,
+        created_at: item.created_at,latitude: item.latitude,longitude: item.longitude
+      }
+
+      ##pushing this tempHash into the main array
+      db_all_data.push(tempHash)
+    end
+
+    ## return response
+    render json: db_all_data, status:200
+  end
+
+  def show_BAK
     job = Job.find_by(reference_number: params[:id])
     if job
-      render json: job, status:200
+      render json: [job], status:200
     else
       render json: {
           error: "Job Not Found."

@@ -38,13 +38,14 @@ class Api::V1::DashboardController < ApplicationController
     }
 
     ## get categories with categories
-    categories = Job.find_by_sql "SELECT categories.id as value, categories.title as label, 0 as count  from jobs left Join categories on jobs.category_id = categories.id where jobs.verified=true group By jobs.category_id"
+    categories = getCategoriesAndJobCount()
 
     ## collect the jobTypes details
     jobTypes = getEmpTypeObj(EmpTypeList, limit)
 
     ## get the recent jobs
-    recentJobs = Job.where("verified =?", "#{true}").limit(limit).order(updated_at: :desc)
+    recentJobs = getRecentJobs(limit)
+    # recentJobs = Job.where("verified =?", "#{true}").limit(limit).order(updated_at: :desc)
     jobTypes["recentJobs"] = recentJobs
     
     ## return response
@@ -153,11 +154,166 @@ class Api::V1::DashboardController < ApplicationController
   ## supportive funcation that will return the jobs on the basis of their types
   def getEmpTypeObj(empTypeList, limit)
     empTypeObj = {}
+    db_all_dataa = []
+    empTypeList.each { |empType| 
+        results = Job
+        .joins("join categories ON categories.id = jobs.category_id")
+        .joins("join companies ON companies.id = jobs.company_id")
+        .select("Jobs.*,categories.id as cat_id,categories.title as cat_title,companies.*")
+        .where("jobs.emp_type LIKE ? AND verified= ?","%#{empType}%", true)
+        .limit(limit)
+        .order(created_at: :desc)
+
+        
+        db_all_data = []
+        results.each do |item|
+          tempHash = {}
+
+          ## getting data from jobs table
+          tempHash["id"] = item.id
+          tempHash["reference_number"] = item.reference_number
+          tempHash["title"] = item.title
+          tempHash["city"] = item.city
+          tempHash["state"] = item.state
+          tempHash["category_id"] = item.category_id
+          tempHash["company_id"] = item.company_id
+          tempHash["emp_type"] = [item.emp_type]
+          tempHash["date"] = item.date
+          tempHash["experience"] = item.experience
+          tempHash["salary"] = item.salary
+          tempHash["cpa"] = item.cpa
+          tempHash["verified"] = item.verified
+          tempHash["description"] = item.description
+          tempHash["skills"] = item.skills
+          tempHash["critical_resp"] = item.critical_resp
+          tempHash["qualification"] = item.qualification
+          tempHash["created_at"] = item.created_at
+          tempHash["updated_at"] = item.updated_at
+          tempHash["updated_by"] = item.updated_by
+          tempHash["approved_by"] = item.approved_by
+          tempHash["approved_at"] = item.approved_at
+          tempHash["allocated_to"] = item.allocated_to
+
+          ## getting data from category table
+          tempHash["category"] = {
+            id: item.id, title: item.title, created_at: item.created_at
+          }
+
+          ## getting data from company table
+          tempHash["company"] = {
+            id: item.id, name: item.name, phone: item.phone, email: item.email, website: item.website, city: item.city,
+            state: item.state, country: item.country, primary_industry: item.primary_industry, founded_in: item.founded_in,
+            logo: item.logo, social_handles: item.social_handles, company_size: item.company_size, description: item.description,
+            created_at: item.created_at,latitude: item.latitude,longitude: item.longitude
+          }
+
+          ##pushing this tempHash into the main array
+          db_all_data.push(tempHash)
+        end
+
+        empTypeObj[empType] = db_all_data
+    }
+    
+    ## return response
+    return empTypeObj
+    
+  end
+
+  ## supportive funcation that will return the jobs on the basis of their types
+  def getEmpTypeObj_BAK(empTypeList, limit)
+    empTypeObj = {}
     empTypeList.each { |empType| 
       empTypeCat = Job.where("emp_type LIKE ? AND verified= ?", "%#{empType}%", "#{true}").limit(limit).order(created_at: :desc)
       empTypeObj[empType] = empTypeCat
     }
     return empTypeObj
+  end
+
+  def getRecentJobs(limit)
+    
+    ## get the jobs data along with the category and companies
+    limit = limit ? limit: 10
+    results = Job
+    .joins("join categories ON categories.id = jobs.category_id")
+    .joins("join companies ON companies.id = jobs.company_id")
+    .select("Jobs.*,categories.id as cat_id,categories.title as cat_title,companies.*")
+    .where("jobs.verified = true")
+    .limit(limit)
+    .order(updated_at: :desc)
+
+    db_all_data = []
+    results.each do |item|
+      tempHash = {}
+
+      ## getting data from jobs table
+      tempHash["id"] = item.id
+      tempHash["reference_number"] = item.reference_number
+      tempHash["title"] = item.title
+      tempHash["city"] = item.city
+      tempHash["state"] = item.state
+      tempHash["category_id"] = item.category_id
+      tempHash["company_id"] = item.company_id
+      tempHash["emp_type"] = [item.emp_type]
+      tempHash["date"] = item.date
+      tempHash["experience"] = item.experience
+      tempHash["salary"] = item.salary
+      tempHash["cpa"] = item.cpa
+      tempHash["verified"] = item.verified
+      tempHash["description"] = item.description
+      tempHash["skills"] = item.skills
+      tempHash["critical_resp"] = item.critical_resp
+      tempHash["qualification"] = item.qualification
+      tempHash["created_at"] = item.created_at
+      tempHash["updated_at"] = item.updated_at
+      tempHash["updated_by"] = item.updated_by
+      tempHash["approved_by"] = item.approved_by
+      tempHash["approved_at"] = item.approved_at
+      tempHash["allocated_to"] = item.allocated_to
+
+      ## getting data from category table
+      tempHash["category"] = {
+        id: item.id, title: item.title, created_at: item.created_at
+      }
+
+      ## getting data from company table
+      tempHash["company"] = {
+        id: item.id, name: item.name, phone: item.phone, email: item.email, website: item.website, city: item.city,
+        state: item.state, country: item.country, primary_industry: item.primary_industry, founded_in: item.founded_in,
+        logo: item.logo, social_handles: item.social_handles, company_size: item.company_size, description: item.description,
+        created_at: item.created_at,latitude: item.latitude,longitude: item.longitude
+      }
+
+      ##pushing this tempHash into the main array
+      db_all_data.push(tempHash)
+    end
+
+    ## return response
+    return db_all_data
+  end
+
+  def getCategoriesAndJobCount()
+    results = Category
+    .joins("join jobs ON jobs.category_id = categories.id")
+    .select("categories.id,categories.title as label, COUNT(jobs.category_id) as count")
+    .where("jobs.verified = true")
+    .group("jobs.category_id")
+
+    db_all_data = []
+    results.each do |item|
+      tempHash = {}
+
+      ## getting data from jobs table
+      tempHash["id"] = item.id
+      tempHash["label"] = item.label
+      tempHash["count"] = item.count
+
+      ##pushing this tempHash into the main array
+      db_all_data.push(tempHash)
+    end
+
+    ## return response
+    # puts db_all_data
+    return db_all_data
   end
 
   ## generate monthwise data
