@@ -121,19 +121,21 @@ class Api::V1::ApplicantsController < ApplicationController
 
     ## checked provided reference_number is exist on the JOb table or not
     ## if not exist return the error
-    jobFoundList = Job.where("verified =? AND reference_number =?", "#{verified}", "#{refNum}")
+    jobFoundList = Job.where("verified =? AND reference_number =?", true, "#{refNum}")
     if jobFoundList.empty?
       render_json("Sorry, no jobs are available for the provided job reference number.: #{refNum}", 400, 'message') and return
     end
 
     ## check if UserFavJob exists or not, if not create it
     userFavJobExist = UserFavJob.where(referenceNumber: refNum).first_or_initialize(user_id: current_user_id)
+
+    ## verify jobs marked as favorite or remove
     if (fav === "true")
       userFavJobExist.save
-      render_json('Job marked as favorite successfully!', 400, 'message') and return
+      render json: {success: true, message: "Job marked as favorite successfully"}, status:200
     elsif (userFavJobExist && fav === "false")
       userFavJobExist.destroy
-      render_json('Job removed as favorite successfully!', 400, 'message') and return
+      render json: {success: true, message: "Job removed as favorite successfully"}, status:200
     end
   end
 
@@ -154,6 +156,10 @@ class Api::V1::ApplicantsController < ApplicationController
     jwt_payload = JWT.decode(request.headers['Authorization'].split(' ').last, Rails.application.credentials.devise_jwt_secret_key!).first
     current_user_id = jwt_payload['id'] || 0
 
+    ## fertch the count by check
+    user_fav_job_count = UserFavJob.where(user_id: current_user_id).count
+
+    ## fetch the results
     results = Job.find_by_sql "SELECT j.*, cat.id as cat_id, cat.created_at as cat_created_at, cat.title as cat_title, com.* FROM jobs as j
         inner Join User_fav_jobs as ufj ON j.reference_number = ufj.referenceNumber
         left Join categories as cat ON j.category_id = cat.id
@@ -210,7 +216,7 @@ class Api::V1::ApplicantsController < ApplicationController
     end
 
     ## return response
-    render json: {data: db_all_data, count: results.count}, status:200
+    render json: {data: db_all_data, count: user_fav_job_count}, status:200
   end
 
   ## This API Fetch the referredjobs jobs details
