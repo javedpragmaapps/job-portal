@@ -24,6 +24,7 @@ Rails.application.routes.draw do
       get 'marketplace/favorite/jobs' => 'applicants#listFavoriteJobs'
       get 'marketplace/referredjobs' => 'applicants#referredjobs'
       get 'marketplace/jobs/categories' => 'applicants#jobCategories'
+      get 'marketplace/elsearch' => 'applicants#elsearch'
       
       ## Wallet Module API Routes
       get 'wallet' => 'wallet#getWallet'

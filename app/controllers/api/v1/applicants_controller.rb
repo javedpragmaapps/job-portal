@@ -301,6 +301,89 @@ class Api::V1::ApplicantsController < ApplicationController
     render json: posts, status:200 
   end
 
+  ## This API Fetch the job categories details
+  def elsearch
+    
+    # check user is loggin or not; if not loggin return the error
+    if !request.headers['Authorization']
+      render_json('User Authorization token is required and can not be empty.', 400, 'msg') and return
+    end
+    jwt_payload = JWT.decode(request.headers['Authorization'].split(' ').last, Rails.application.credentials.devise_jwt_secret_key!).first
+    current_user_id = jwt_payload['id'] || 0
+
+    ## fetch params payload
+    text = params[:text]
+    city = params[:city]
+    category = params[:category]
+    experience = params[:experience]
+    empType = params[:empType]
+    createdDate = params[:createdDate]
+    cpaRange = params[:cpaRange]
+
+    # text = "(title:Legacy) AND (city:Savannah)"
+    # text = params[:text]
+
+    # search the results from the elasetic search
+    tempHash_main = {}
+    # search_jobs_results = Job.search(text).records
+    search_jobs_results = Job.search(text, city, category, empType, cpaRange, createdDate).records
+
+    # setting temporary value which needs to be returned
+    tempHash_main["total"] = search_jobs_results.count
+
+    # check check has results or not
+    db_all_data = []
+    if(search_jobs_results.count > 0)
+      # iterate the loop on the search results so that desiteed response can be provided
+      search_jobs_results.each do |item|
+
+        ## getting data from jobs table
+        tempHash = {}
+        tempHash["id"] = item.id
+        tempHash["reference_number"] = item.reference_number
+        tempHash["title"] = item.title
+        tempHash["city"] = item.city
+        tempHash["state"] = item.state
+        tempHash["category_id"] = item.category_id
+        tempHash["company_id"] = item.company_id
+        tempHash["emp_type"] = [item.emp_type]
+        tempHash["date"] = item.date
+        tempHash["experience"] = item.experience
+        tempHash["salary"] = item.salary
+        tempHash["cpa"] = item.cpa
+        tempHash["verified"] = item.verified
+        tempHash["description"] = item.description
+        tempHash["skills"] = item.skills
+        tempHash["critical_resp"] = item.critical_resp
+        tempHash["qualification"] = item.qualification
+        tempHash["created_at"] = item.created_at
+        tempHash["updated_at"] = item.updated_at
+        tempHash["updated_by"] = item.updated_by
+        tempHash["approved_by"] = item.approved_by
+        tempHash["approved_at"] = item.approved_at
+        tempHash["allocated_to"] = item.allocated_to
+
+        ## getting data from category table
+        search_jobs_results.each do |category|          
+          tempHash["category"] = {
+            id: category.id, title: category.title, created_at: category.created_at
+          }
+        end
+
+        db_all_data.push(tempHash)
+      end
+
+      # jobss = Job.search(text).records
+      tempHash_main["data"] = db_all_data
+      render json: tempHash_main, status:200
+    else
+
+      tempHash_main["data"] = []
+      tempHash_main["total"] = 0
+      render json: tempHash_main, status:200
+    end
+  end
+
   # dafault funcation to render content
   ## this way we can add multiple render funcation on the comtroller otherwise DoubleRenderError was triggered
   def render_json(data, status_code, main_key = 'data')
