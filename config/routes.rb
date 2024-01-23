@@ -44,6 +44,7 @@ Rails.application.routes.draw do
       # User Module API Routes
       get 'user/all' => 'user#index'
       get 'user/referralCode' => 'user#fetchReferralcode'
+      post 'user/update/:id' => 'user#update'
       # resources :user, only: [:index, :show, :create, :update, :destroy]
     end
   end

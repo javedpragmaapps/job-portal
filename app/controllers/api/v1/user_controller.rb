@@ -1,4 +1,5 @@
 class Api::V1::UserController < ApplicationController
+  skip_before_action :verify_authenticity_token
   def index
     posts = User.all();
     render json: posts, status:200
@@ -13,7 +14,14 @@ class Api::V1::UserController < ApplicationController
   end
 
   def update
-    render json: { error: "Inside update Action"}
+    user = User.find(params[:id])
+    if user.update(user_params)
+      render json: { error: "the user info successfully updated"}
+      # puts 'the user info successfully updated' #add whatever you want
+    else
+      render json: { error: "the user info failed "}
+      # puts 'failed'
+    end
   end
 
   def destroy
@@ -64,5 +72,9 @@ class Api::V1::UserController < ApplicationController
   ## this way we can add multiple render funcation on the comtroller otherwise DoubleRenderError was triggered
   def render_json(data, status_code, main_key = 'data')
     render json: { "#{main_key}": data }, status: status_code
+  end
+
+  def user_params
+    params.require(:user).permit(:username, :email, :firstname, :lastname, :city, :state, :mobile, :socialhandles)
   end
 end
