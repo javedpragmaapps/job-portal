@@ -15,4 +15,10 @@ class User < ApplicationRecord
     usersCPA_details = UsersCpa.find_by(userId: id)
     usersCPA = usersCPA_details ? +usersCPA_details.current_total_cpa : 0
   end
+
+  def reset_password!(password)
+   self.reset_password_token = nil
+   self.password = password
+   save!
+  end
 end

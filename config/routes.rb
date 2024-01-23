@@ -45,6 +45,7 @@ Rails.application.routes.draw do
       get 'user/all' => 'user#index'
       get 'user/referralCode' => 'user#fetchReferralcode'
       post 'user/update/:id' => 'user#update'
+      post 'user/password' => 'user#updateUserPassword'
       # resources :user, only: [:index, :show, :create, :update, :destroy]
     end
   end
